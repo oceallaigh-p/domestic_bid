@@ -1,5 +1,5 @@
 # Flight Attendant Bid Calculation Program  
-# &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; (Domestic Lines)
+# &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; (Domestic Lines)
 
 <br /> 
 
@@ -9,8 +9,10 @@ This is a simple Python program that calculates the total pay (hourly pay + per 
 attendant bid packet. It then ranks the lines according to total pay (from greatest to least).
 
 
-It uses pandas to read in data from Excel and uses pdfkit to produce a PDF document with the suggested
-bid line order.
+It uses pandas to read in data from Excel. It then creates a class for each line in the bid packet and calculates 
+the total pay for each line. The line objects are then sorted by total pay (from greatest to least) and converted
+back into a pandas DataFrame. The sorted DataFrame is formatted and saved as an HTML file which is then converted 
+into a PDF document using pdfkit. 
 
 ### Program Classes
 ```

@@ -108,7 +108,7 @@ class Line(object):
 
     def as_dict(self):
         """
-        Used to create a dictionary to be used by Pandas DataFrame constructor.
+        Used to create a dictionary to be used by pandas DataFrame constructor.
 
         Is called to create output file of the data we are interested in.
 
@@ -163,13 +163,13 @@ def color_position_lines(d):
 
 def style_df(df_bid):
     """
-    Function that sets the CSS properties to style the Pandas DataFrame.
+    Function that sets the CSS properties to style the pandas DataFrame.
 
     Reference:
         https://mode.com/example-gallery/python_dataframe_styling/
     """
 
-    # Set CSS properties for th elements (header) in Pandas DataFrame
+    # Set CSS properties for th elements (header) in pandas DataFrame
     th_props = [
         ('font-size', '24px'),
         ('text-align', 'center'),
@@ -178,7 +178,7 @@ def style_df(df_bid):
         ('background-color', 'lightgrey')
     ]
 
-    # Set CSS properties for td elements in Pandas DataFrame
+    # Set CSS properties for td elements in pandas DataFrame
     td_props = [
         ('font-size', '18px'),
         ('text-align', 'center'),
@@ -202,10 +202,10 @@ def main():
     # Constant for column location of crew.
     CREW_COL = 3
 
-    # Read in data from excel file to Pandas DataFrame.
+    # Read in data from excel file to pandas DataFrame.
     df_lines = pd.read_excel('data/monthly_lines.xlsx')
 
-    # Convert Pandas DataFrame to a list.
+    # Convert pandas DataFrame to a list.
     lines = df_lines.values.tolist()
 
     # List to hold Line objects.
@@ -222,7 +222,7 @@ def main():
     # Sort Line objects from Greatest to Least (pay).
     sorted_lines = sorted(line_instances, reverse=True)
 
-    # Create Pandas DataFrame from sorted Line objects.
+    # Create pandas DataFrame from sorted Line objects.
     df_bid = pd.DataFrame([obj.as_dict() for obj in sorted_lines])
 
     # Start data frame index at 1 instead of 0.
