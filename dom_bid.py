@@ -262,11 +262,11 @@ def main():
     html = styled_bid.render()
 
     # Write sorted and formatted DataFrame to HTML file.
-    with open('monthly_bid.html', 'w') as fp:
+    with open('output/monthly_bid.html', 'w') as fp:
         fp.write(html)
 
     # Create PDF from HTML file
-    pdf.from_file('monthly_bid.html', 'monthly_bid.pdf')
+    pdf.from_file('output/monthly_bid.html', 'output/monthly_bid.pdf')
 
 
 if __name__ == "__main__":
