@@ -12,32 +12,40 @@ class Line(object):
         tafb        (int):   The 'time away from base' for the line.
         crew        (int):   The number of crew positions for the line.
         position    (str):   The position, FMP or FA, to bid for the line.
-        pay         (float): The total pay value for the line (hourly + per diem).
+        pay_credit  (float): The hourly pay + purser pay + international (Central America) pay, for the line.
+        per_diem    (float): The per diem pay for the line.
+        pay_total   (float): The total pay value for the line (hourly + per diem).
     """
 
-    PAY_RATE = 65.79 / 60.0  # Pay rate per minute
-    FMP_RATE = 1.0 / 60.0  # Purser pay rate per minute
-    PER_DIEM_RATE = 0.04  # Per diem rate per minute
-    GUARANTEE = 70 * 60  # Monthly guaranteed credit (in minutes)
+    PAY_RATE = 65.79 / 60.0         # Pay rate per minute
+    FMP_RATE_DOM = 1.0 / 60.0       # Purser pay rate per minute - Domestic
+    FMP_RATE_INT = 2.0 / 60.0       # Purser pay rate (per minute) - International (Central America)
+    INTERNATIONAL_PAY = 2.0 / 60.0  # International pay rate (per minute)
+    PER_DIEM_RATE = 2.25 / 60.0     # Per diem rate per minute
+    MINIMUM = 71 * 60               # Monthly minimum guaranteed credit (in minutes)
 
-    def __init__(self, line_number, credit, tafb, crew, position=None):
+    def __init__(self, line_number, credit, tafb, crew, international, position=None):
         """
         The constructor for the Line class.
 
         Parameters:
-            line_number (int):   The monthly bid line number.
-            credit      (int):   The total credit hours for the line.
-            tafb        (int):   The 'time away from base' for the line.
-            crew        (int):   The number of crew positions for the line.
-            position    (str):   The position, FMP or FA, to bid for the line.
+            line_number   (int):   The monthly bid line number.
+            credit        (int):   The total credit hours for the line.
+            tafb          (int):   The 'time away from base' for the line.
+            crew          (int):   The number of crew positions for the line.
+            international (bool):  Whether the line is an international (Central American) line.
+            position      (str):   The position, FMP or FA, to bid for the line.
         """
 
         self.line_number = int(line_number)
         self.credit = int(self.__convert_minutes(credit))
         self.tafb = int(self.__convert_minutes(tafb))
         self.crew = int(crew)
+        self.international = bool(international)
         self.position = position
-        self.pay = self.__calculate_pay()
+        self.pay_credit = self.__calculate_pay()
+        self.per_diem = self.__calculate_per_diem()
+        self.pay_total = self.pay_credit + self.per_diem
 
     def __eq__(self, other):
         """
@@ -50,7 +58,7 @@ class Line(object):
             (bool): Returns True if the pay for the two objects are equal.
         """
 
-        return self.pay == other.pay
+        return self.pay_total == other.pay_total
 
     def __lt__(self, other):
         """
@@ -63,7 +71,7 @@ class Line(object):
             (bool): Returns True if the pay for object self is less than the pay for object other.
         """
 
-        return self.pay < other.pay
+        return self.pay_total < other.pay_total
 
     @staticmethod
     def __convert_minutes(time):
@@ -83,28 +91,43 @@ class Line(object):
 
     def __calculate_pay(self):
         """
-        Calculates the total line pay (hours plus per diem) for the month.
+        Calculates the line credit pay for the month.
 
         It calculates pay based in the following:
             - if credit hours < contractual minimum guaranteed hours,
                   minimum guaranteed hours is used
             - if credit hours >= contractual minimum guaranteed hours,
                   credit hours is used
+            -- if line is an international (Central American) line, International pay is added to the pay for the line
             -- if position is FMP, Purser pay is added to the pay for the line
 
         Returns:
-            (float): The total line pay (hourly + per diem + purser pay [if applicable])
+            (float): The line credit pay (hourly + purser pay [if applicable] + international pay [if applicable])
         """
 
-        if self.credit < self.GUARANTEE:
-            pay = self.GUARANTEE * self.PAY_RATE + self.tafb * self.PER_DIEM_RATE
+        if self.credit < self.MINIMUM:
+            pay = self.MINIMUM * self.PAY_RATE
         else:
-            pay = self.credit * self.PAY_RATE + self.tafb * self.PER_DIEM_RATE
+            pay = self.credit * self.PAY_RATE
 
-        if self.position == 'FMP':
-            return pay + self.credit * self.FMP_RATE
+        if self.international and self.position == 'FMP':
+            return pay + self.credit * (self.INTERNATIONAL_PAY + self.FMP_RATE_INT)
+        elif self.international and self.position != 'FMP':
+            return pay + self.credit * self.INTERNATIONAL_PAY
+        elif self.position == 'FMP':
+            return pay + self.credit * self.FMP_RATE_DOM
         else:
             return pay
+
+    def __calculate_per_diem(self):
+        """
+        Calculates the per diem pay for the line.
+
+        Returns:
+             (float): The total per diem pay for the line
+        """
+
+        return self.tafb * self.PER_DIEM_RATE
 
     def as_dict(self):
         """
@@ -113,13 +136,14 @@ class Line(object):
         Is called to create output file of the data we are interested in.
 
         Returns:
-            (Line): Dictionary containing line number, position, and total pay
+            (Line): Dictionary containing line number, position, total pay, pay credit, and per diem
 
         Reference:
         https://stackoverflow.com/questions/47623014/converting-a-list-of-objects-to-a-pandas-dataframe
         """
 
-        return {'Line Number': self.line_number, 'Position': self.position, 'Total Pay': self.pay}
+        return {'Line Number': self.line_number, 'Position': self.position, 'Total Pay': self.pay_total,
+                'Pay Credit': self.pay_credit, 'Per Diem': self.per_diem}
 
 
 class PurserLine(Line):
@@ -129,8 +153,8 @@ class PurserLine(Line):
     It is a child of class Line that sets the position attribute to FMP.
     """
 
-    def __init__(self, line_number, credit, tafb, crew):
-        Line.__init__(self, line_number, credit, tafb, crew, position='FMP')
+    def __init__(self, line_number, credit, tafb, crew, international):
+        Line.__init__(self, line_number, credit, tafb, crew, international, position='FMP')
 
 
 class FALine(Line):
@@ -140,8 +164,8 @@ class FALine(Line):
     It is a child of class Line that sets the position attribute to Any FA.
     """
 
-    def __init__(self, line_number, credit, tafb, crew):
-        Line.__init__(self, line_number, credit, tafb, crew, position='Any FA')
+    def __init__(self, line_number, credit, tafb, crew, international):
+        Line.__init__(self, line_number, credit, tafb, crew, international, position='Any FA')
 
 
 def color_position_lines(d):
@@ -156,9 +180,9 @@ def color_position_lines(d):
     """
 
     if d.Position == 'FMP':
-        return ['background-color: orange'] * 3
+        return ['background-color: orange'] * 5
     else:
-        return ['background-color: blue'] * 3
+        return ['background-color: blue'] * 5
 
 
 def style_df(df_bid):
@@ -193,7 +217,7 @@ def style_df(df_bid):
 
     return (df_bid.style
             .apply(color_position_lines, axis=1)
-            .format({'Total Pay': "${:20,.0f}"})
+            .format({'Total Pay': "${:20,.0f}", 'Pay Credit': "${:20,.0f}", 'Per Diem': "${:20,.0f}"})
             .set_table_styles(styles)
             )
 
@@ -228,8 +252,11 @@ def main():
     # Start data frame index at 1 instead of 0.
     df_bid.index = df_bid.index + 1
 
+    # Get first 150 rows of sorted Line objects
+    df_bid_150 = df_bid.head(150)
+
     # Apply formatting to DataFrame.
-    styled_bid = style_df(df_bid)
+    styled_bid = style_df(df_bid_150)
 
     # Render DataFrame as HTML.
     html = styled_bid.render()

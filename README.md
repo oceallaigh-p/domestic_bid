@@ -5,7 +5,7 @@
 
 ## Description
 
-This is a simple Python program that calculates the total pay (hourly pay + per diem) for each line in a flight 
+This is a simple Python program that calculates the total pay<sup id="a1">[1](#f1)</sup> (hourly pay + per diem) for each line in a flight 
 attendant bid packet. It then ranks the lines according to total pay (from greatest to least).
 
 
@@ -55,3 +55,8 @@ class FALine
 	* pdfkit 0.6.1
 
 <br /> 
+
+
+## Footnotes
+
+<b id="f1">1</b> Total Pay does not include Trip Rig Time pay or Wide Body Purser pay . [↩](#a1)
