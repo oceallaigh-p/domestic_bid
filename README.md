@@ -23,7 +23,9 @@ class Line
         tafb        (int):   The 'time away from base' for the line.
         crew        (int):   The number of crew positions for the line.
         position    (str):   The position, FMP or FA, to bid for the line.
-        pay         (float): The total pay value for the line (hourly + per diem).
+        pay_credit  (float): The hourly pay + purser pay + international (Central America) pay, for the line.
+        per_diem    (float): The per diem pay for the line.
+        pay_total   (float): The total pay value for the line (hourly + per diem).
 ```
 ```
 class PurserLine
