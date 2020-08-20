@@ -1,4 +1,4 @@
-# Flight Attendant Bid Calculation Program  
+# Flight Attendant Bid Optimization Program  
 # &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; (Domestic Lines)
 
 <br /> 
